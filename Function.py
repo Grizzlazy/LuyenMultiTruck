@@ -541,7 +541,7 @@ def initial_solution7():
     current_fitness = fitness(current_sol)[0]
     best_sol = current_sol
     best_fitness = current_fitness
-    for i in range(tabu_tenure1*4):
+    for i in range(Data.number_of_cities):
         neighborhood = []
         
         a = random.random()
@@ -663,7 +663,7 @@ def initial_solution7():
     # print(current_sol)
     # print(fitness(current_sol))
         
-    while if_improved < 2:
+    while if_improved < 1:
         neighborhood = []
         if_improved += 1
         neighborhood1 = Neighborhood_drone.Neighborghood_change_drone_route_max_pro_plus(current_sol)

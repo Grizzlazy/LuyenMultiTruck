@@ -44,7 +44,7 @@ start_time = time.time()
 factor = 0.3 #0.3 0.6
 alpha = [0.5, 0.3, 0.1]
 theta = 2
-SEGMENT = 12
+# SEGMENT = 12
 # random.seed(7)
 solution_pack_len = 0
 def roulette_wheel_selection(population, fitness_scores): 

@@ -478,6 +478,7 @@ for txt_file in txt_files:
         avg = 0
         avg_run_time = 0
         best_csv_fitness = 1000000
+        solution = []
         for i in range(ITE):
             BEST = []
             # print("------------------------",i,"------------------------")
@@ -486,6 +487,7 @@ for txt_file in txt_files:
             print("---------- RESULT ----------")
             print(best_sol)
             print(best_fitness)
+            solution.append(best_sol)
             avg += best_fitness/ITE
             result.append(best_fitness)
             print(Function.Check_if_feasible(best_sol))
@@ -500,8 +502,8 @@ for txt_file in txt_files:
                 best_csv_sol = best_sol
                 best_csv_fitness = best_fitness
             if i == ITE - 1:
-                sheet.cell(row=row, column=column, value=avg_run_time)
-                sheet.cell(row=row, column=column+1, value=str(best_csv_sol))
+                sheet.cell(row=row, column=column, value=str(run_time))
+                sheet.cell(row=row, column=column+1, value=str(solution))
             workbook.save(f"Random_{data_set}_{center}_CL1.xlsx")
         # Tăng dòng cho lần chạy tiếp theo
         row += 1
