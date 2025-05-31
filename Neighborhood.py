@@ -1358,7 +1358,7 @@ def Neighborhood_combine_truck_and_drone_neighborhood_with_tabu_list_with_packag
         min_to_improve = potential_solution[i][1][0]
         # list_neighborhood = [Neighborhood_drone.Neighborghood_change_drone_route_max_pro_plus_for_specific_truck, Neighborhood_drone.Neighborhood_group_trip]
         # list_neighborhood = [Neighborhood_drone.Neighborghood_change_drone_route_max_pro_plus_for_specific_truck, Neighborhood_drone.Neighborhood_change_index_trip, Neighborhood_drone.Neighborhood_group_trip]       
-        list_neighborhood = [Neighborhood_drone.Neighborghood_change_drone_route_max_pro_plus, Neighborhood_drone.Neighborhood_change_index_trip]       
+        list_neighborhood = [Neighborhood_drone.Neighborghood_change_drone_route_max_pro_plus, Neighborhood_drone.Neighborhood_change_index_trip, Neighborhood_drone.Neighborhood_group_trip]       
         while j < number_of_loop_drone:
             j += 1
             # print("i: ",i," j: ", j)
@@ -1868,3 +1868,6 @@ def Turn_single_to_k_trip(solution, k):
                 if new_solution[0][i][j][1][k] == 0:
                     new_solution[0][i][j][1].pop(k)
     return new_solution
+
+
+[[[[0, []], [3, [3]], [0, [9]], [5, [5, 8]], [9, []], [4, [4, 7]], [8, []], [7, []]], [[0, []], [10, [10]], [6, [6]], [1, [1, 2]], [2, []]]], [[[3, [3]]], [[10, [10]]], [[5, [5, 8]]], [[6, [6]]], [[4, [4, 7]]], [[1, [1, 2]]]]]
