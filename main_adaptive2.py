@@ -27,7 +27,7 @@ global BEST
 global start_time
 
 # Set up chỉ số -------------------------------------------------------------------
-ITE = 3
+ITE = 10
 epsilon = (-1) * 0.00001
 # 15:   120,    20:    150
 # BREAKLOOP = Data.number_of_cities * 
@@ -35,8 +35,8 @@ LOOP_IMPROVED = 0
 SET_LAST_10 = [] 
 BEST = []
 TIME_LIMIT = 3600
-data_set = os.getenv('DATA_SET', "U_10_0.5_Num_1.txt")
-center = os.getenv('CENTER', "center")
+data_set = os.getenv('DATA_SET', "U_10_1.5_Num_5.txt")
+center = os.getenv('CENTER', "border")
 start_time = time.time()
 # 
 factor = 0.3 #0.3 0.6
