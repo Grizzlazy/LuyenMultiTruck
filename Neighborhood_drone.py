@@ -481,101 +481,146 @@ def Neighborhood_group_trip(solution):
     fit, dt, tt = Function.fitness(solution)
     temp.append([fit, dt, tt])
     neighborhood.append(temp)
+    
     for i in range(len(solution[1])):
         if Data.number_of_drones < 2:
             return neighborhood
-        max = -1
-        min = -1
+        max_range = -1
+        min_range = -1
         if i <= len(solution[1]) - 4:
-            max = i + 4
+            max_range = i + 4
         else:
-            max = len(solution[1])
+            max_range = len(solution[1])
         if i - 3 >= 0:
-            min = i - 3
+            min_range = i - 3
         else:
-            min = 0
-        for j in range(min, max):
-            if i == j: continue
+            min_range = 0
+            
+        for j in range(min_range, max_range):
+            if i == j: 
+                continue
+                
             for k in range(len(solution[1][j])):
-                new_solution = copy.deepcopy(solution)
-                package_need_group = []
-                package_need_group_to_city = solution[1][j][k][0]
-                for l in range(len(solution[1][j][k][1])):
-                    package_need_group.append(solution[1][j][k][1][l])
-                change_drone_flight_come_truck_number = Function.city_in_which_truck(solution,package_need_group_to_city)
-                if Function.total_demand(solution[1][i]) + Function.sum_weight(package_need_group) <= Data.drone_capacity:
-                    if Function.max_release_date_update(solution[1][i]) *  DIFFERENTIAL_RATE_RELEASE_TIME + Data.standard_deviation > Function.max_release_date(package_need_group) and Function.min_release_date_update(solution[1][i]) *  DIFFERENTIAL_RATE_RELEASE_TIME + B_ratio * Data.standard_deviation > Function.max_release_date(package_need_group):
-                        check = False
-                        check_break = False
-                        for l in range(len(solution[1][i])):
-                            new_city_of_package_need_group = solution[1][i][l][0]
-                            come_to_truck = Function.city_in_which_truck(solution,new_city_of_package_need_group)
-                            if change_drone_flight_come_truck_number == come_to_truck:
-                                if j < i: 
-                                    check_break = True
+                try:
+                    new_solution = copy.deepcopy(solution)
+                    package_need_group = []
+                    package_need_group_to_city = solution[1][j][k][0]
+                    
+                    # Collect packages to be grouped
+                    for l in range(len(solution[1][j][k][1])):
+                        package_need_group.append(solution[1][j][k][1][l])
+                    
+                    change_drone_flight_come_truck_number = Function.city_in_which_truck(solution, package_need_group_to_city)
+                    
+                    # Capacity check
+                    if Function.total_demand(solution[1][i]) + Function.sum_weight(package_need_group) <= Data.drone_capacity:
+                        # Release date constraints
+                        if (Function.max_release_date_update(solution[1][i]) * DIFFERENTIAL_RATE_RELEASE_TIME + Data.standard_deviation > Function.max_release_date(package_need_group) and 
+                            Function.min_release_date_update(solution[1][i]) * DIFFERENTIAL_RATE_RELEASE_TIME + B_ratio * Data.standard_deviation > Function.max_release_date(package_need_group)):
+                            
+                            check = False
+                            check_break = False
+                            
+                            # Try to group with existing pickup points in trip i
+                            for l in range(len(solution[1][i])):
+                                new_city_of_package_need_group = solution[1][i][l][0]
+                                come_to_truck = Function.city_in_which_truck(solution, new_city_of_package_need_group)
+                                
+                                if change_drone_flight_come_truck_number == come_to_truck:
+                                    if j < i: 
+                                        check_break = True
+                                        break
+                                    
+                                    # Add packages to existing pickup point
+                                    new_solution[1][i][l][1] += package_need_group
+                                    
+                                    # Update truck route - add packages to destination city
+                                    for m in range(len(new_solution[0][come_to_truck])):
+                                        city_evaluate = new_solution[0][come_to_truck][m][0]
+                                        
+                                        if city_evaluate == new_city_of_package_need_group:
+                                            new_solution[0][come_to_truck][m][1] += package_need_group
+                                        
+                                        # Remove packages from source city with validation
+                                        if city_evaluate == package_need_group_to_city:
+                                            packages_to_remove = []
+                                            
+                                            for n in range(len(package_need_group)):
+                                                pkg = package_need_group[n]
+                                                if pkg in new_solution[0][come_to_truck][m][1]:
+                                                    packages_to_remove.append(pkg)
+                                            
+                                            # Remove only packages that exist
+                                            for pkg in packages_to_remove:
+                                                new_solution[0][come_to_truck][m][1].remove(pkg)
+                                    
+                                    check = True
                                     break
-                                new_solution[1][i][l][1] += package_need_group
-                                # Sửa lại new_solution[0]
-                                for m in range(len(new_solution[0][come_to_truck])):
-                                    city_evaluate = new_solution[0][come_to_truck][m][0]
-                                    if city_evaluate == new_city_of_package_need_group:
-                                        new_solution[0][come_to_truck][m][1] += package_need_group
-                                    if city_evaluate == package_need_group_to_city:
-                                        for n in range(len(package_need_group)):
-                                            new_solution[0][come_to_truck][m][1].remove(package_need_group[n])
-                                check = True
-                        '''if(i == 1 and j == 3 and k ==0):
-                            print("-------------------------------")
-                            for iii in range(Data.number_of_trucks):
-                                print(new_solution[0][iii])
-                            print(new_solution[1])
-                            print("-------------------------------")'''
-                        if check_break: continue
-                        
-                        if not check:
-                            stop = False
-                            if i < j:
-                                for m in range(i+1, j):
-                                    for n in range(len(new_solution[1][m])):
-                                        checkCoincideTruck = Function.city_in_which_truck(new_solution, new_solution[1][m][n][0])
-                                        if checkCoincideTruck == change_drone_flight_come_truck_number:
-                                            stop = True
-                                            break
-                                    if stop: break
-                            else:
-                                for m in range(j+1, i):
-                                    for n in range(len(new_solution[1][m])):
-                                        checkCoincideTruck = Function.city_in_which_truck(new_solution, new_solution[1][m][n][0])
-                                        if checkCoincideTruck == change_drone_flight_come_truck_number:
-                                            stop = True
-                                            break
-                                    if stop: break
-                            if stop: continue                                
-                            new_solution[1][i].append([package_need_group_to_city, package_need_group])
-                            shortest_route_by_point, shortest_route_by_truck = Function.find_drone_flight_shortest(solution, new_solution[1][i])
-                            drone_fly_time = Data.euclid_flight_matrix[0][shortest_route_by_point[0]] + Data.euclid_flight_matrix[shortest_route_by_point[len(shortest_route_by_point)-1]][0]
-                            for m in range(len(shortest_route_by_point)-1):
-                                drone_fly_time += Data.euclid_flight_matrix[shortest_route_by_point[m]][shortest_route_by_point[m+1]]
-                            if drone_fly_time + len(shortest_route_by_point) * Data.unloading_time > Data.drone_limit_time:
+                            
+                            if check_break: 
                                 continue
-                        # Gạch phần tử được gộp ra khỏi new_solution mới
-                        new_solution[1][j].pop(k)
-                        if new_solution[1][j] == []:
-                            new_solution[1].pop(j)
-                        '''if(i == 1 and j == 3 and k ==0):
-                            print("-------------------------------")
-                            for iii in range(Data.number_of_trucks):
-                                print(new_solution[0][iii])
-                            print(new_solution[1])
-                            print("-------------------------------")'''
-                        if Function.check_if_drone_time_out_of_limit(new_solution):
-                            temp = []
-                            temp.append(new_solution)
-                            fit, dt, tt = Function.fitness(new_solution)
-                            temp.append([fit, dt, tt])
-                            #print(fit)
-                            temp.append([i,j,k])
-                            neighborhood.append(temp)
+                            
+                            # If no existing pickup point can be used, create new one
+                            if not check:
+                                stop = False
+                                
+                                # Check for truck conflicts between trips
+                                if i < j:
+                                    for m in range(i+1, j):
+                                        for n in range(len(new_solution[1][m])):
+                                            checkCoincideTruck = Function.city_in_which_truck(new_solution, new_solution[1][m][n][0])
+                                            if checkCoincideTruck == change_drone_flight_come_truck_number:
+                                                stop = True
+                                                break
+                                        if stop: 
+                                            break
+                                else:
+                                    for m in range(j+1, i):
+                                        for n in range(len(new_solution[1][m])):
+                                            checkCoincideTruck = Function.city_in_which_truck(new_solution, new_solution[1][m][n][0])
+                                            if checkCoincideTruck == change_drone_flight_come_truck_number:
+                                                stop = True
+                                                break
+                                        if stop: 
+                                            break
+                                
+                                if stop: 
+                                    continue
+                                
+                                # Add new pickup point to trip i
+                                new_solution[1][i].append([package_need_group_to_city, package_need_group])
+                                
+                                # Check drone time constraints
+                                shortest_route_by_point, shortest_route_by_truck = Function.find_drone_flight_shortest(solution, new_solution[1][i])
+                                drone_fly_time = Data.euclid_flight_matrix[0][shortest_route_by_point[0]] + Data.euclid_flight_matrix[shortest_route_by_point[len(shortest_route_by_point)-1]][0]
+                                for m in range(len(shortest_route_by_point)-1):
+                                    drone_fly_time += Data.euclid_flight_matrix[shortest_route_by_point[m]][shortest_route_by_point[m+1]]
+                                
+                                if drone_fly_time + len(shortest_route_by_point) * Data.unloading_time > Data.drone_limit_time:
+                                    continue
+                            
+                            # Remove the original pickup point from trip j
+                            if k < len(new_solution[1][j]):
+                                new_solution[1][j].pop(k)
+                            else:
+                                continue
+                            
+                            # Remove empty trip if necessary
+                            if new_solution[1][j] == []:
+                                new_solution[1].pop(j)
+                            
+                            # Validate and add to neighborhood
+                            if Function.check_if_drone_time_out_of_limit(new_solution):
+                                temp = []
+                                temp.append(new_solution)
+                                fit, dt, tt = Function.fitness(new_solution)
+                                temp.append([fit, dt, tt])
+                                temp.append([i, j, k])
+                                neighborhood.append(temp)
+                
+                except Exception as e:
+                    continue
+    
     return neighborhood
 
 def choose_what_to_group(solution, index_drone_trip, index_in_trip, find_in_forward):
