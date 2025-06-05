@@ -1435,14 +1435,14 @@ def cal_distance_of_truck(solution, index_truck):
     return value, data_truck, sum(truck_time)
 
 def fitness(solution):
-    print("\n===== DEBUG: FITNESS FUNCTION START =====")
-    print(f"Input solution: {solution}")
+    # print("\n===== DEBUG: FITNESS FUNCTION START =====")
+    # print(f"Input solution: {solution}")
     
     drone_package = copy.deepcopy(solution[1])
     base_path = copy.deepcopy(solution[0])
     
-    print(f"Drone packages: {len(drone_package)} trips")
-    print(f"Base path: {len(base_path)} truck routes")
+    # print(f"Drone packages: {len(drone_package)} trips")
+    # print(f"Base path: {len(base_path)} truck routes")
     
     data_truck = []
     for i in range(Data.number_of_trucks):
@@ -1453,7 +1453,7 @@ def fitness(solution):
     truck_time = [0] * Data.number_of_trucks
     truck_position = []
     
-    print("\n----- Building truck position arrays -----")
+    # print("\n----- Building truck position arrays -----")
     # Build truck_position WITH added depot at end
     for i in range(len(base_path)):
         temp = []
@@ -1462,52 +1462,52 @@ def fitness(solution):
         # Add depot (0) at the end of each route
         temp.append(0)
         truck_position.append(temp)
-        print(f"Truck {i} positions: {temp}")
+        # print(f"Truck {i} positions: {temp}")
         
     truck_current_point = [0] * Data.number_of_trucks
     drone_queue = queue.PriorityQueue()
     for i in range(0, Data.number_of_drones):
         drone_queue.put((0, f"Drone {i}"))
-    print(f"Initialized {Data.number_of_drones} drones in queue")
+    # print(f"Initialized {Data.number_of_drones} drones in queue")
     
-    print("\n----- Initial truck movement from depot -----")
+    # print("\n----- Initial truck movement from depot -----")
     # Initial truck movement from depot
     for i in range(Data.number_of_trucks):
         if len(truck_position[i]) > 1:
             distance = Data.manhattan_move_matrix[truck_position[i][truck_current_point[i]]][truck_position[i][truck_current_point[i] + 1]]
-            print(f"Truck {i}: Distance from {truck_position[i][truck_current_point[i]]} to {truck_position[i][truck_current_point[i] + 1]} = {distance}")
+            # print(f"Truck {i}: Distance from {truck_position[i][truck_current_point[i]]} to {truck_position[i][truck_current_point[i] + 1]} = {distance}")
             
             if truck_position[i][truck_current_point[i]] == 0:
                 if truck_current_point[i] < len(base_path[i]) and base_path[i][truck_current_point[i]][1] != []:
                     truck_time[i] += Data.unloading_time
-                    print(f"Truck {i}: Adding unloading time at depot: {Data.unloading_time}")
+                    # print(f"Truck {i}: Adding unloading time at depot: {Data.unloading_time}")
                     
             if truck_current_point[i] < len(base_path[i]):
                 release_time = max_release_date(base_path[i][truck_current_point[i]][1])
-                print(f"Truck {i}: Max release date: {release_time}")
+                # print(f"Truck {i}: Max release date: {release_time}")
                 truck_time[i] += release_time + distance
                 data_truck[i].append(truck_time[i] - distance)
-                print(f"Truck {i}: Updated time = {truck_time[i]}")
+                # print(f"Truck {i}: Updated time = {truck_time[i]}")
                 base_path[i][truck_current_point[i]][1] = []
             else:
                 truck_time[i] += distance
                 data_truck[i].append(truck_time[i] - distance)
             truck_current_point[i] += 1
-            print(f"Truck {i}: New position index = {truck_current_point[i]}")
+            # print(f"Truck {i}: New position index = {truck_current_point[i]}")
         else: 
             data_truck[i].append(0)
             data_truck[i].append(0)
-            print(f"Truck {i}: Empty route, times [0,0]")
+            # print(f"Truck {i}: Empty route, times [0,0]")
             
-    print("\n===== Starting main simulation loop =====")
+    # print("\n===== Starting main simulation loop =====")
     # Main simulation loop
     iteration_count = 0
     while len(drone_package) > 0:
         iteration_count += 1
-        print(f"\n----- Iteration {iteration_count}: {len(drone_package)} drone packages left -----")
+        # print(f"\n----- Iteration {iteration_count}: {len(drone_package)} drone packages left -----")
         
         # Move trucks to points without drone packages
-        print("\n> Moving trucks with no waiting packages:")
+        # print("\n> Moving trucks with no waiting packages:")
         for i in range(Data.number_of_trucks):
             moves = 0
             while truck_current_point[i] < len(truck_position[i]) - 1:
@@ -1518,34 +1518,34 @@ def fitness(solution):
                         current_has_packages = True
                 
                 if current_has_packages:
-                    print(f"Truck {i}: Waiting for packages at position {truck_current_point[i]} ({truck_position[i][truck_current_point[i]]})")
+                    # print(f"Truck {i}: Waiting for packages at position {truck_current_point[i]} ({truck_position[i][truck_current_point[i]]})")
                     break
                     
                 # Move to next position
                 current_pos = truck_position[i][truck_current_point[i]]
                 next_pos = truck_position[i][truck_current_point[i] + 1]
                 distance = Data.manhattan_move_matrix[current_pos][next_pos]
-                print(f"Truck {i}: Moving from {current_pos} to {next_pos}, distance = {distance}")
+                # print(f"Truck {i}: Moving from {current_pos} to {next_pos}, distance = {distance}")
                 
                 if current_pos == 0: 
                     if truck_current_point[i] < len(base_path[i]):
                         release_time = max_release_date(base_path[i][truck_current_point[i]][1])
                         truck_time[i] = max(truck_time[i], release_time) + distance
                         truck_time[i] += Data.unloading_time
-                        print(f"Truck {i}: At depot, waiting for release time {release_time}, new time = {truck_time[i]}")
+                        # print(f"Truck {i}: At depot, waiting for release time {release_time}, new time = {truck_time[i]}")
                     else:
                         truck_time[i] += distance
-                        print(f"Truck {i}: At depot (after route), new time = {truck_time[i]}")
+                        # print(f"Truck {i}: At depot (after route), new time = {truck_time[i]}")
                 else:
                     truck_time[i] += distance + Data.service_time
-                    print(f"Truck {i}: Added travel ({distance}) + service time ({Data.service_time}), new time = {truck_time[i]}")
+                    # print(f"Truck {i}: Added travel ({distance}) + service time ({Data.service_time}), new time = {truck_time[i]}")
                     
                 data_truck[i].append(truck_time[i] - distance)
                 truck_current_point[i] += 1
                 moves += 1
             
-            if moves > 0:
-                print(f"Truck {i}: Made {moves} moves, now at position {truck_current_point[i]} ({truck_position[i][truck_current_point[i]]})")
+            # if moves > 0:
+                # print(f"Truck {i}: Made {moves} moves, now at position {truck_current_point[i]} ({truck_position[i][truck_current_point[i]]})")
                 
         # Check stop condition - all trucks finished
         number = 0
@@ -1557,26 +1557,26 @@ def fitness(solution):
             if truck_finished:
                 number += 1
         
-        print(f"Trucks finished: {number}/{Data.number_of_trucks}")
+        # print(f"Trucks finished: {number}/{Data.number_of_trucks}")
         if number == Data.number_of_trucks: 
-            print("All trucks have finished their routes or have no more packages to wait for")
+            # print("All trucks have finished their routes or have no more packages to wait for")
             break
             
         # Process next drone trip
-        print("\n> Processing next drone trip:")
+        # print("\n> Processing next drone trip:")
         current_drone_trip = drone_package.pop(0)
-        print(f"Trip: {current_drone_trip}")
+        # print(f"Trip: {current_drone_trip}")
         
         # Extract all packages from current trip
         drone_pack = []
         for pickup_point in current_drone_trip:
             for package in pickup_point[1]:
                 drone_pack.append(package)
-        print(f"Packages to deliver: {drone_pack}")
+        # print(f"Packages to deliver: {drone_pack}")
         
         # Find shortest drone route using existing function
         pos, position = find_drone_flight_shortest(solution, current_drone_trip)
-        print(f"Shortest route: {pos}, truck positions: {position}")
+        # print(f"Shortest route: {pos}, truck positions: {position}")
         
         # Get available drone
         drone = drone_queue.get()
@@ -1585,12 +1585,12 @@ def fitness(solution):
         
         # Add unloading time for drone at depot - THIS IS THE CHANGE
         start += Data.unloading_time
-        print(f"Using {drone[1]}, available at {drone[0]}, package release at {release_time}, start time after unloading = {start}")
+        # print(f"Using {drone[1]}, available at {drone[0]}, package release at {release_time}, start time after unloading = {start}")
         
         LastCityOfDrone = -1
         
         # Process each pickup point in the trip
-        print("\n> Drone delivery details:")
+        # print("\n> Drone delivery details:")
         for i in range(len(position)):
             pickup_city = current_drone_trip[i][0]
             deliver = current_drone_trip[i][1]
@@ -1600,29 +1600,29 @@ def fitness(solution):
                 flight_time = Data.euclid_flight_matrix[0][pickup_city]
                 start += flight_time
                 LastCityOfDrone = pickup_city
-                print(f"Drone flies from depot to city {pickup_city}, flight time = {flight_time}, arrival at {start}")
+                # print(f"Drone flies from depot to city {pickup_city}, flight time = {flight_time}, arrival at {start}")
             else:
                 prev_city = current_drone_trip[i-1][0]
                 flight_time = Data.euclid_flight_matrix[prev_city][pickup_city]
                 start += flight_time
                 LastCityOfDrone = pickup_city
-                print(f"Drone flies from city {prev_city} to city {pickup_city}, flight time = {flight_time}, arrival at {start}")
+                # print(f"Drone flies from city {prev_city} to city {pickup_city}, flight time = {flight_time}, arrival at {start}")
             
             # Remove delivered packages from truck routes
             for package in deliver:
-                print(f"Delivering package {package} at city {pickup_city}")
+                # print(f"Delivering package {package} at city {pickup_city}")
                 found = False
                 for k in range(Data.number_of_trucks):
                     for l in range(truck_current_point[k], len(base_path[k])):
                         if l < len(base_path[k]) and package in base_path[k][l][1]:
                             base_path[k][l][1].remove(package)
                             found = True
-                            print(f"Removed package {package} from truck {k}, position {l}")
+                            # print(f"Removed package {package} from truck {k}, position {l}")
                             break
                     if found:
                         break
-                if not found:
-                    print(f"WARNING: Package {package} not found in any truck route!")
+                # if not found:
+                    # print(f"WARNING: Package {package} not found in any truck route!")
             
             # Synchronize with truck
             truck_idx = position[i]
@@ -1630,13 +1630,13 @@ def fitness(solution):
             start = max(start + Data.unloading_time, truck_time[truck_idx] + Data.unloading_time)
             start += Data.service_time
             wait_time = start - original_start - Data.unloading_time
-            print(f"Sync with truck {truck_idx}: drone time {original_start + Data.unloading_time}, truck time {truck_time[truck_idx] + Data.unloading_time}")
-            if wait_time > 0:
-                print(f"Drone waiting {wait_time} time units for truck {truck_idx}")
-            print(f"After service time, new time = {start}")
+            # print(f"Sync with truck {truck_idx}: drone time {original_start + Data.unloading_time}, truck time {truck_time[truck_idx] + Data.unloading_time}")
+            # if wait_time > 0:
+                # print(f"Drone waiting {wait_time} time units for truck {truck_idx}")
+            # print(f"After service time, new time = {start}")
             
             # Move truck after drone coordination
-            print(f"\n> Moving truck {truck_idx} after drone coordination:")
+            # print(f"\n> Moving truck {truck_idx} after drone coordination:")
             num = 0
             while truck_current_point[truck_idx] < len(truck_position[truck_idx]) - 1:
                 # Check if current position still has packages
@@ -1646,71 +1646,71 @@ def fitness(solution):
                         current_has_packages = True
                 
                 if current_has_packages:
-                    print(f"Truck {truck_idx} still has packages at position {truck_current_point[truck_idx]}, stopping")
+                    # print(f"Truck {truck_idx} still has packages at position {truck_current_point[truck_idx]}, stopping")
                     break
                     
                 current_pos = truck_position[truck_idx][truck_current_point[truck_idx]]
                 next_pos = truck_position[truck_idx][truck_current_point[truck_idx] + 1]
                 distance = Data.manhattan_move_matrix[current_pos][next_pos]
-                print(f"Truck {truck_idx}: Moving from {current_pos} to {next_pos}, distance = {distance}")
+                # print(f"Truck {truck_idx}: Moving from {current_pos} to {next_pos}, distance = {distance}")
                 
                 if num == 0:
                     truck_time[truck_idx] = start + distance
-                    print(f"First move: Setting time to start ({start}) + distance ({distance}) = {truck_time[truck_idx]}")
+                    # print(f"First move: Setting time to start ({start}) + distance ({distance}) = {truck_time[truck_idx]}")
                 else:
                     truck_time[truck_idx] += distance
-                    print(f"Additional move: Adding distance {distance}, new time = {truck_time[truck_idx]}")
+                    # print(f"Additional move: Adding distance {distance}, new time = {truck_time[truck_idx]}")
                 
                 if current_pos != 0:
                     truck_time[truck_idx] += Data.service_time
-                    print(f"At customer {current_pos}, adding service time {Data.service_time}, new time = {truck_time[truck_idx]}")
+                    # print(f"At customer {current_pos}, adding service time {Data.service_time}, new time = {truck_time[truck_idx]}")
                 else:
                     truck_time[truck_idx] += Data.unloading_time
-                    print(f"At depot, adding unloading time {Data.unloading_time}, new time = {truck_time[truck_idx]}")
+                    # print(f"At depot, adding unloading time {Data.unloading_time}, new time = {truck_time[truck_idx]}")
                     
                 data_truck[truck_idx].append(truck_time[truck_idx] - distance)
                 truck_current_point[truck_idx] += 1
                 num += 1
-                print(f"Truck {truck_idx} moved to position {truck_current_point[truck_idx]} ({truck_position[truck_idx][truck_current_point[truck_idx]]})")
+                # print(f"Truck {truck_idx} moved to position {truck_current_point[truck_idx]} ({truck_position[truck_idx][truck_current_point[truck_idx]]})")
         
         # Return drone to depot
         flight_time_to_depot = Data.euclid_flight_matrix[LastCityOfDrone][0]
         end = start + flight_time_to_depot
-        print(f"Drone returns to depot from city {LastCityOfDrone}, flight time = {flight_time_to_depot}, arrival at {end}")
+        # print(f"Drone returns to depot from city {LastCityOfDrone}, flight time = {flight_time_to_depot}, arrival at {end}")
         drone_queue.put((end, drone[1]))
-        print(f"{drone[1]} available again at time {end}")
+        # print(f"{drone[1]} available again at time {end}")
     
     # Finish remaining truck movements
-    print("\n----- Finishing remaining truck movements -----")
+    # print("\n----- Finishing remaining truck movements -----")
     for i in range(Data.number_of_trucks):
         moves = 0
         while truck_current_point[i] < len(truck_position[i]) - 1:
             current_pos = truck_position[i][truck_current_point[i]]
             next_pos = truck_position[i][truck_current_point[i] + 1]
             distance = Data.manhattan_move_matrix[current_pos][next_pos]
-            print(f"Truck {i}: Final move from {current_pos} to {next_pos}, distance = {distance}")
+            # print(f"Truck {i}: Final move from {current_pos} to {next_pos}, distance = {distance}")
             
             truck_time[i] += distance
             if current_pos != 0:
                 truck_time[i] += Data.service_time
-                print(f"Adding service time {Data.service_time}, new time = {truck_time[i]}")
+                # print(f"Adding service time {Data.service_time}, new time = {truck_time[i]}")
             else:
                 truck_time[i] += Data.unloading_time
-                print(f"Adding unloading time {Data.unloading_time}, new time = {truck_time[i]}")
+                # print(f"Adding unloading time {Data.unloading_time}, new time = {truck_time[i]}")
                 
             data_truck[i].append(truck_time[i] - distance)
             truck_current_point[i] += 1
             moves += 1
         
-        if moves > 0:
-            print(f"Truck {i}: Made {moves} final moves, ending at position {truck_current_point[i]}")
+        # if moves > 0:
+            # print(f"Truck {i}: Made {moves} final moves, ending at position {truck_current_point[i]}")
     
     value = max(truck_time)
-    print(f"\n===== FITNESS FUNCTION RESULTS =====")
-    print(f"Truck times: {truck_time}")
-    print(f"Maximum completion time (makespan): {value}")
-    print(f"Sum of all truck times: {sum(truck_time)}")
-    print(f"=====================================\n")
+    # print(f"\n===== FITNESS FUNCTION RESULTS =====")
+    # print(f"Truck times: {truck_time}")
+    # print(f"Maximum completion time (makespan): {value}")
+    # print(f"Sum of all truck times: {sum(truck_time)}")
+    # print(f"=====================================\n")
     
     return value, data_truck, sum(truck_time)
 
@@ -2445,7 +2445,7 @@ def determine_start_end(solution, index_truck, city):
 # Data.read_data_random("test_data/data_demand_random/20/C101_0.5.dat")
 # print(fitness(test_sol))
 
-test_sol = [[[[0, []], [3, [3]], [5, [5, 9]], [7, [7, 4, 8]], [9, []], [8, []], [4, []]], [[0, []], [10, [10]], [0, [2]], [6, [6]], [1, [1]], [2, []]]], [[[3, [3]]], [[5, [5, 9]], [10, [10]]], [[6, [6]]], [[1, [1]], [7, [7, 4, 8]]]]]
-Data.read_data_2024(r"D:\LuyenMultiTruck\test_data\MTVRPRDDR\Instances\U_10_0.5_Num_1.txt", center_type="center")
+# test_sol = [[[[0, []], [3, [3]], [5, [5, 9]], [7, [7, 4, 8]], [9, []], [8, []], [4, []]], [[0, []], [10, [10]], [0, [2]], [6, [6]], [1, [1]], [2, []]]], [[[3, [3]]], [[5, [5, 9]], [10, [10]]], [[6, [6]]], [[1, [1]], [7, [7, 4, 8]]]]]
+# Data.read_data_2024(r"D:\LuyenMultiTruck\test_data\MTVRPRDDR\Instances\U_10_0.5_Num_1.txt", center_type="center")
 
-print(fitness(test_sol))
+# print(fitness(test_sol))
